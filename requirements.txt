@@ -6,3 +6,4 @@ requests
 openai
 pandas
 numpy
+pdf2docx
