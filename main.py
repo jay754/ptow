@@ -5,9 +5,9 @@ import os
 import tempfile
 
 application = Flask(__name__)
-CORS(application)  # Fix here!
+CORS(application)
 
-@application.route('/hello', methods=['GET'])  # Fix here!
+@application.route('/hello', methods=['GET'])
 def hello():
     return 'Hello, world!'
 
@@ -52,3 +52,5 @@ def convert_pdf_to_word():
 
 if __name__ == '__main__':
     application.run(debug=True)
+
+app = application  # <-- Required for Elastic Beanstalk/Gunicorn
