@@ -4,14 +4,14 @@ from pdf2docx import Converter
 import os
 import tempfile
 
-app = Flask(__name__)
+application = Flask(__name__)
 CORS(app)
 
-@app.route('/hello', methods=['GET'])
+@application.route('/hello', methods=['GET'])
 def hello():
     return 'Hello, world!'
 
-@app.route('/convert', methods=['POST'])
+@application.route('/convert', methods=['POST'])
 def convert_pdf_to_word():
     if 'file' not in request.files:
         print("No file in request")
@@ -52,4 +52,4 @@ def convert_pdf_to_word():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    application.run(debug=True)
