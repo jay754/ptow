@@ -5,9 +5,9 @@ import os
 import tempfile
 
 application = Flask(__name__)
-CORS(app)
+CORS(application)  # Fix here!
 
-@application.route('/hello', methods=['GET'])
+@application.route('/hello', methods=['GET'])  # Fix here!
 def hello():
     return 'Hello, world!'
 
@@ -49,7 +49,6 @@ def convert_pdf_to_word():
     except Exception as e:
         print("Exception occurred:", e)
         return jsonify({'error': str(e)}), 500
-
 
 if __name__ == '__main__':
     application.run(debug=True)
