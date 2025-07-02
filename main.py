@@ -34,7 +34,6 @@ def convert_pdf_to_word():
             pdf_file.save(pdf_path)
             print(f"Saved PDF to: {pdf_path}")
 
-            # Try conversion
             cv = Converter(pdf_path)
             cv.convert(docx_path, start=0, end=None)
             cv.close()
@@ -50,7 +49,8 @@ def convert_pdf_to_word():
         print("Exception occurred:", e)
         return jsonify({'error': str(e)}), 500
 
+# <-- Make sure this is ABOVE __main__:
+app = application
+
 if __name__ == '__main__':
     application.run(debug=True)
-
-app = application  # <-- Required for Elastic Beanstalk/Gunicorn
