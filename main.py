@@ -6,6 +6,9 @@ import tempfile
 from pdf2image import convert_from_path
 from zipfile import ZipFile, ZIP_DEFLATED
 import io
+import tabula
+import pandas as pd
+from openpyxl import Workbook
 
 application = Flask(__name__)
 CORS(application)
@@ -100,6 +103,57 @@ def convert_pdf_to_image():
                 mimetype=mimetype
             )
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@application.route('/convert_pdf_to_excel', methods=['POST'])
+def convert_pdf_to_excel():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+
+    pdf_file = request.files['file']
+    if pdf_file.filename == '':
+        return jsonify({'error': 'Empty filename'}), 400
+    if not pdf_file.filename.lower().endswith('.pdf'):
+        return jsonify({'error': 'Only PDF files are allowed'}), 400
+
+    try:
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            pdf_path = os.path.join(tmpdirname, pdf_file.filename)
+            pdf_file.save(pdf_path)
+
+            # Extract tables from PDF
+            print("Extracting tables from PDF...")
+            tables = tabula.read_pdf(pdf_path, pages='all', multiple_tables=True)
+            print(f"Found {len(tables)} tables")
+
+            if not tables:
+                return jsonify({'error': 'No tables found in PDF'}), 400
+
+            # Create Excel workbook
+            wb = Workbook()
+            # Remove default sheet
+            wb.remove(wb.active)
+
+            # Add each table to a separate worksheet
+            for i, table in enumerate(tables):
+                if not table.empty:
+                    ws = wb.create_sheet(title=f'Table_{i+1}')
+                    for row_idx, row in enumerate(table.values, 1):
+                        for col_idx, value in enumerate(row, 1):
+                            ws.cell(row=row_idx, column=col_idx, value=value)
+
+            # Save Excel file
+            excel_path = os.path.join(tmpdirname, 'output.xlsx')
+            wb.save(excel_path)
+
+            return send_file(
+                excel_path,
+                as_attachment=True,
+                download_name=pdf_file.filename.rsplit('.', 1)[0] + '.xlsx',
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+    except Exception as e:
+        print("Exception occurred:", e)
         return jsonify({'error': str(e)}), 500
 
 # <-- Make sure this is ABOVE __main__:
